@@ -52,8 +52,7 @@ router.get("/stock/:code/detail", async (req, res) => {
           .from(ohlcTable)
           .where(and(eq(ohlcTable.code, code), gte(ohlcTable.date, startInt), lte(ohlcTable.date, endInt)))
           .orderBy(asc(ohlcTable.date));
-      } catch (e) {
-        console.error(`[stock detail] OHLC fetch failed for ${code}:`, e);
+      } catch {
       }
     }
 
