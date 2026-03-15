@@ -1,0 +1,7 @@
+packages:
+  "recharts": "For rendering advanced financial charts (OHLC, RSI, etc.)"
+  "date-fns": "For date formatting and manipulation"
+  "clsx": "For constructing dynamic tailwind classes"
+  "tailwind-merge": "For merging tailwind classes safely"
+  "framer-motion": "For page transitions and micro-interactions"
+  "lucide-react": "For crisp, modern icons"

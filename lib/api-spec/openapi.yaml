@@ -1,22 +1,30 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: IDX Screener API
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
     description: Health operations
+  - name: screener
+    description: Stock screener operations
+  - name: sector
+    description: Sector operations
+  - name: stock
+    description: Stock detail operations
+  - name: watchlist
+    description: Watchlist operations
+  - name: general
+    description: General metadata
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
       summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,6 +32,308 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /general:
+    get:
+      operationId: getGeneral
+      tags: [general]
+      summary: Get general metadata
+      responses:
+        "200":
+          description: General metadata
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GeneralResponse"
+
+  /candidates:
+    get:
+      operationId: getCandidates
+      tags: [screener]
+      summary: Get screener candidates
+      parameters:
+        - name: date
+          in: query
+          schema: { type: string }
+        - name: defaultFilter
+          in: query
+          schema: { type: boolean }
+        - name: derMax
+          in: query
+          schema: { type: number }
+        - name: excludeCorpAction
+          in: query
+          schema: { type: boolean }
+        - name: excludeNotation
+          in: query
+          schema: { type: boolean }
+        - name: excludeUma
+          in: query
+          schema: { type: boolean }
+        - name: limit
+          in: query
+          schema: { type: integer }
+        - name: offset
+          in: query
+          schema: { type: integer }
+        - name: minValue
+          in: query
+          schema: { type: number }
+        - name: minVolume
+          in: query
+          schema: { type: number }
+        - name: momentumMin
+          in: query
+          schema: { type: number }
+        - name: momentumWeek
+          in: query
+          schema: { type: integer }
+        - name: mw
+          in: query
+          schema: { type: number }
+        - name: perMax
+          in: query
+          schema: { type: number }
+        - name: perMin
+          in: query
+          schema: { type: number }
+        - name: qw
+          in: query
+          schema: { type: number }
+        - name: roeMin
+          in: query
+          schema: { type: number }
+        - name: search
+          in: query
+          schema: { type: string }
+        - name: sector
+          in: query
+          schema: { type: string }
+        - name: vw
+          in: query
+          schema: { type: number }
+        - name: withSectorRank
+          in: query
+          schema: { type: boolean }
+        - name: sortBy
+          in: query
+          schema: { type: string }
+        - name: sortDir
+          in: query
+          schema: { type: string, enum: [asc, desc] }
+      responses:
+        "200":
+          description: Screener candidates
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CandidatesResponse"
+
+  /screener/rsi:
+    get:
+      operationId: getScreenerRsi
+      tags: [screener]
+      summary: Get RSI per sector
+      parameters:
+        - name: date
+          in: query
+          schema: { type: string }
+        - name: period
+          in: query
+          schema: { type: integer }
+      responses:
+        "200":
+          description: RSI per sector
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SectorRsi"
+
+  /sector/strength:
+    get:
+      operationId: getSectorStrength
+      tags: [sector]
+      summary: Get sector strength
+      parameters:
+        - name: week
+          in: query
+          schema: { type: integer }
+      responses:
+        "200":
+          description: Sector strength
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/SectorStrength"
+
+  /stock/{code}/detail:
+    get:
+      operationId: getStockDetail
+      tags: [stock]
+      summary: Get stock detail
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema: { type: string }
+        - name: start
+          in: query
+          required: true
+          schema: { type: string }
+        - name: end
+          in: query
+          required: true
+          schema: { type: string }
+        - name: date
+          in: query
+          schema: { type: string }
+      responses:
+        "200":
+          description: Stock detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StockDetail"
+        "404":
+          description: Stock not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /{code}/bid-offer:
+    get:
+      operationId: getBidOffer
+      tags: [stock]
+      summary: Get bid/offer time series
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema: { type: string }
+        - name: start
+          in: query
+          required: true
+          schema: { type: string }
+        - name: end
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Bid/offer time series
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/BidOfferItem"
+
+  /{code}/foreign:
+    get:
+      operationId: getForeignFlow
+      tags: [stock]
+      summary: Get foreign flow
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema: { type: string }
+        - name: start
+          in: query
+          required: true
+          schema: { type: string }
+        - name: end
+          in: query
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Foreign flow data
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ForeignFlowResponse"
+
+  /watchlist:
+    get:
+      operationId: getWatchlist
+      tags: [watchlist]
+      summary: Get watchlist
+      responses:
+        "200":
+          description: Watchlist items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/WatchlistItem"
+
+  /watchlist/{code}:
+    post:
+      operationId: addToWatchlist
+      tags: [watchlist]
+      summary: Add stock to watchlist
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Added to watchlist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WatchlistItem"
+    delete:
+      operationId: removeFromWatchlist
+      tags: [watchlist]
+      summary: Remove stock from watchlist
+      parameters:
+        - name: code
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: Removed from watchlist
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /sync:
+    post:
+      operationId: triggerSync
+      tags: [screener]
+      summary: Trigger data sync from IDX
+      responses:
+        "200":
+          description: Sync started
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /sync/status:
+    get:
+      operationId: getSyncStatus
+      tags: [screener]
+      summary: Get sync status
+      responses:
+        "200":
+          description: Sync status
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SyncStatus"
+
 components:
   schemas:
     HealthStatus:
@@ -34,3 +344,440 @@ components:
       required:
         - status
 
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+      required:
+        - success
+
+    SyncStatus:
+      type: object
+      properties:
+        syncing:
+          type: boolean
+        lastSync:
+          type: string
+          nullable: true
+        stockCount:
+          type: integer
+      required:
+        - syncing
+        - stockCount
+
+    GeneralResponse:
+      type: object
+      properties:
+        stockList:
+          type: array
+          items:
+            $ref: "#/components/schemas/StockRef"
+        sectors:
+          type: array
+          items:
+            type: string
+        industries:
+          type: array
+          items:
+            type: string
+        subSectors:
+          type: array
+          items:
+            type: string
+      required:
+        - stockList
+        - sectors
+        - industries
+        - subSectors
+
+    StockRef:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+          nullable: true
+      required:
+        - code
+
+    CandidatesResponse:
+      type: object
+      properties:
+        date:
+          type: string
+          nullable: true
+        totalCount:
+          type: integer
+        limit:
+          type: integer
+        offset:
+          type: integer
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/Candidate"
+      required:
+        - totalCount
+        - limit
+        - offset
+        - data
+
+    Candidate:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+          nullable: true
+        sector:
+          type: string
+          nullable: true
+        industry:
+          type: string
+          nullable: true
+        subSector:
+          type: string
+          nullable: true
+        marketCapital:
+          type: number
+          nullable: true
+        totalRevenue:
+          type: number
+          nullable: true
+        per:
+          type: number
+          nullable: true
+        pbv:
+          type: number
+          nullable: true
+        roe:
+          type: number
+          nullable: true
+        roa:
+          type: number
+          nullable: true
+        der:
+          type: number
+          nullable: true
+        npm:
+          type: number
+          nullable: true
+        week4PC:
+          type: number
+          nullable: true
+        week13PC:
+          type: number
+          nullable: true
+        week26PC:
+          type: number
+          nullable: true
+        week52PC:
+          type: number
+          nullable: true
+        ytdpc:
+          type: number
+          nullable: true
+        hasNotation:
+          type: boolean
+        hasCorpAction:
+          type: boolean
+        hasUma:
+          type: boolean
+        valueScore:
+          type: number
+          nullable: true
+        qualityScore:
+          type: number
+          nullable: true
+        momentumScore:
+          type: number
+          nullable: true
+        compositeScore:
+          type: number
+          nullable: true
+        sectorRank:
+          type: integer
+          nullable: true
+        sectorPercentile:
+          type: number
+          nullable: true
+      required:
+        - code
+        - hasNotation
+        - hasCorpAction
+        - hasUma
+
+    SectorRsi:
+      type: object
+      properties:
+        sector:
+          type: string
+        rsi:
+          type: number
+          nullable: true
+        stockCount:
+          type: integer
+        overbought:
+          type: integer
+        oversold:
+          type: integer
+        neutral:
+          type: integer
+      required:
+        - sector
+        - stockCount
+        - overbought
+        - oversold
+        - neutral
+
+    SectorStrength:
+      type: object
+      properties:
+        sector:
+          type: string
+        avgMomentum:
+          type: number
+        count:
+          type: integer
+        rank:
+          type: integer
+      required:
+        - sector
+        - avgMomentum
+        - count
+        - rank
+
+    StockDetail:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+          nullable: true
+        sector:
+          type: string
+          nullable: true
+        industry:
+          type: string
+          nullable: true
+        subSector:
+          type: string
+          nullable: true
+        marketCapital:
+          type: number
+          nullable: true
+        per:
+          type: number
+          nullable: true
+        pbv:
+          type: number
+          nullable: true
+        roe:
+          type: number
+          nullable: true
+        roa:
+          type: number
+          nullable: true
+        der:
+          type: number
+          nullable: true
+        npm:
+          type: number
+          nullable: true
+        week4PC:
+          type: number
+          nullable: true
+        week13PC:
+          type: number
+          nullable: true
+        week26PC:
+          type: number
+          nullable: true
+        week52PC:
+          type: number
+          nullable: true
+        ytdpc:
+          type: number
+          nullable: true
+        valueScore:
+          type: number
+          nullable: true
+        qualityScore:
+          type: number
+          nullable: true
+        momentumScore:
+          type: number
+          nullable: true
+        compositeScore:
+          type: number
+          nullable: true
+        hasNotation:
+          type: boolean
+        hasCorpAction:
+          type: boolean
+        hasUma:
+          type: boolean
+        ohlc:
+          type: array
+          items:
+            $ref: "#/components/schemas/OhlcItem"
+      required:
+        - code
+        - hasNotation
+        - hasCorpAction
+        - hasUma
+        - ohlc
+
+    OhlcItem:
+      type: object
+      properties:
+        date:
+          type: string
+        open:
+          type: number
+          nullable: true
+        high:
+          type: number
+          nullable: true
+        low:
+          type: number
+          nullable: true
+        close:
+          type: number
+          nullable: true
+        volume:
+          type: number
+          nullable: true
+        value:
+          type: number
+          nullable: true
+        bidVolume:
+          type: number
+          nullable: true
+        offerVolume:
+          type: number
+          nullable: true
+        foreignBuy:
+          type: number
+          nullable: true
+        foreignSell:
+          type: number
+          nullable: true
+      required:
+        - date
+
+    BidOfferItem:
+      type: object
+      properties:
+        date:
+          type: string
+        bidVolume:
+          type: number
+          nullable: true
+        offerVolume:
+          type: number
+          nullable: true
+      required:
+        - date
+
+    ForeignFlowResponse:
+      type: object
+      properties:
+        code:
+          type: string
+        start:
+          type: string
+        end:
+          type: string
+        data:
+          type: array
+          items:
+            $ref: "#/components/schemas/ForeignFlowItem"
+        summary:
+          $ref: "#/components/schemas/ForeignFlowSummary"
+      required:
+        - code
+        - start
+        - end
+        - data
+        - summary
+
+    ForeignFlowItem:
+      type: object
+      properties:
+        date:
+          type: string
+        buy:
+          type: number
+          nullable: true
+        sell:
+          type: number
+          nullable: true
+        net:
+          type: number
+          nullable: true
+      required:
+        - date
+
+    ForeignFlowSummary:
+      type: object
+      properties:
+        totalBuy:
+          type: number
+        totalSell:
+          type: number
+        totalNet:
+          type: number
+        dayCount:
+          type: integer
+      required:
+        - totalBuy
+        - totalSell
+        - totalNet
+        - dayCount
+
+    WatchlistItem:
+      type: object
+      properties:
+        code:
+          type: string
+        name:
+          type: string
+          nullable: true
+        sector:
+          type: string
+          nullable: true
+        per:
+          type: number
+          nullable: true
+        roe:
+          type: number
+          nullable: true
+        der:
+          type: number
+          nullable: true
+        week26PC:
+          type: number
+          nullable: true
+        compositeScore:
+          type: number
+          nullable: true
+        addedAt:
+          type: string
+      required:
+        - code
+        - addedAt
