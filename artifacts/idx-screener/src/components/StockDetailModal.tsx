@@ -4,7 +4,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { useGetStockDetail } from "@workspace/api-client-react";
 import { format, subMonths } from "date-fns";
-import { formatIDR, formatNum, formatPct, parseIdxDate } from "@/lib/format";
+import { formatIDR, formatNum, formatPct, parseIdxDate, parseIdxDateShort } from "@/lib/format";
 import { WatchlistButton } from "./WatchlistButton";
 import { cn } from "@/lib/utils";
 import {
@@ -144,13 +144,14 @@ export function StockDetailModal({ code, onClose }: { code: string | null; onClo
                           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="hsl(var(--border))" strokeOpacity={0.5} />
                           <XAxis 
                             dataKey="date" 
-                            tickFormatter={(v) => parseIdxDate(v)} 
+                            tickFormatter={(v) => parseIdxDateShort(v)}
                             stroke="hsl(var(--muted-foreground))"
                             fontSize={11}
                             tickLine={false}
                             axisLine={false}
                             dy={10}
-                            minTickGap={30}
+                            minTickGap={50}
+                            interval="preserveStartEnd"
                           />
                           <YAxis 
                             domain={['auto', 'auto']} 
@@ -160,11 +161,13 @@ export function StockDetailModal({ code, onClose }: { code: string | null; onClo
                             tickLine={false}
                             axisLine={false}
                             dx={-10}
+                            width={55}
                           />
                           <Tooltip 
                             contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.5)' }}
                             labelFormatter={(v) => parseIdxDate(v as string)}
                             itemStyle={{ color: 'hsl(var(--foreground))', fontFamily: 'var(--font-mono)' }}
+                            formatter={(value: number) => [`Rp ${formatNum(value)}`, "Close"]}
                           />
                           <Area 
                             type="monotone" 
