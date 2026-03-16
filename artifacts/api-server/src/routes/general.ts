@@ -44,10 +44,22 @@ router.post("/sync", async (req, res) => {
 router.get("/sync/status", async (req, res) => {
   try {
     const stocks = await db.select({ code: screenerTable.code }).from(screenerTable);
+    // Next auto-sync: 16:00 WIB (09:00 UTC) on next weekday
+    const now = new Date();
+    const nextSync = new Date();
+    nextSync.setUTCHours(9, 0, 0, 0);
+    if (now >= nextSync || now.getUTCDay() === 0 || now.getUTCDay() === 6) {
+      nextSync.setUTCDate(nextSync.getUTCDate() + 1);
+      while (nextSync.getUTCDay() === 0 || nextSync.getUTCDay() === 6) {
+        nextSync.setUTCDate(nextSync.getUTCDate() + 1);
+      }
+    }
     res.json({
       syncing: isSyncing,
       lastSync: lastSyncTime?.toISOString() ?? null,
+      nextSync: nextSync.toISOString(),
       stockCount: stocks.length,
+      source: "Yahoo Finance (.JK)",
     });
   } catch (err) {
     console.error(err);
