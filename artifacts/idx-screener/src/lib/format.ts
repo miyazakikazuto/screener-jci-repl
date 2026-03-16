@@ -27,11 +27,35 @@ export function formatNum(num: number | null | undefined): string {
 }
 
 export function parseIdxDate(dateStr: string | null | undefined): string {
-  if (!dateStr || dateStr.length !== 8) return "-";
+  if (!dateStr) return "-";
   try {
-    const parsed = parse(dateStr, "yyyyMMdd", new Date());
-    return format(parsed, "MMM d, yyyy");
-  } catch (e) {
+    if (dateStr.length === 8) {
+      const parsed = parse(dateStr, "yyyyMMdd", new Date());
+      return format(parsed, "d MMM yyyy");
+    }
+    if (dateStr.length === 10) {
+      const parsed = parse(dateStr, "yyyy-MM-dd", new Date());
+      return format(parsed, "d MMM yyyy");
+    }
+    return dateStr;
+  } catch {
+    return dateStr;
+  }
+}
+
+export function parseIdxDateShort(dateStr: string | null | undefined): string {
+  if (!dateStr) return "-";
+  try {
+    if (dateStr.length === 8) {
+      const parsed = parse(dateStr, "yyyyMMdd", new Date());
+      return format(parsed, "d MMM");
+    }
+    if (dateStr.length === 10) {
+      const parsed = parse(dateStr, "yyyy-MM-dd", new Date());
+      return format(parsed, "d MMM");
+    }
+    return dateStr;
+  } catch {
     return dateStr;
   }
 }
