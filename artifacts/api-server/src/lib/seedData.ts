@@ -219,10 +219,12 @@ export async function seedIfEmpty(): Promise<void> {
     startDate.setFullYear(startDate.getFullYear() - 1);
     const workingDays = getWorkingDays(startDate, endDate);
 
+    const BATCH_SIZE = 500;
     for (const stock of SEED_STOCKS) {
       const rows = generateOhlc(stock.code, stock.basePrice, stock.volatility, stock.week26PC ?? null, workingDays);
-      for (const row of rows) {
-        await db.insert(ohlcTable).values(row).onConflictDoNothing();
+      for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+        const batch = rows.slice(i, i + BATCH_SIZE);
+        await db.insert(ohlcTable).values(batch).onConflictDoNothing();
       }
     }
     console.log(`[seed] Generated OHLC data for ${SEED_STOCKS.length} stocks (${workingDays.length} days each)`);
