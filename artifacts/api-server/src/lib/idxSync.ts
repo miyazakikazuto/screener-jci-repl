@@ -1,5 +1,5 @@
 import { db, screenerTable, ohlcTable, syncStateTable } from "@workspace/db";
-import { eq, and, gte, lte, asc } from "drizzle-orm";
+import { eq, and, gte, lte, asc, sql } from "drizzle-orm";
 
 export let isSyncing = false;
 export let lastSyncTime: Date | null = null;
@@ -105,12 +105,12 @@ export async function syncStockOhlc(
     await db.insert(ohlcTable).values(rows.slice(i, i + BATCH)).onConflictDoUpdate({
       target: [ohlcTable.code, ohlcTable.date],
       set: {
-        open: rows[i]!.open,
-        high: rows[i]!.high,
-        low: rows[i]!.low,
-        close: rows[i]!.close,
-        volume: rows[i]!.volume,
-        value: rows[i]!.value,
+        open: sql`excluded.open`,
+        high: sql`excluded.high`,
+        low: sql`excluded.low`,
+        close: sql`excluded.close`,
+        volume: sql`excluded.volume`,
+        value: sql`excluded.value`,
         updatedAt: new Date(),
       },
     });
@@ -208,12 +208,12 @@ export async function runFullSync(): Promise<void> {
           await db.insert(ohlcTable).values(rows.slice(i, i + BATCH)).onConflictDoUpdate({
             target: [ohlcTable.code, ohlcTable.date],
             set: {
-              open: rows[i]!.open,
-              high: rows[i]!.high,
-              low: rows[i]!.low,
-              close: rows[i]!.close,
-              volume: rows[i]!.volume,
-              value: rows[i]!.value,
+              open: sql`excluded.open`,
+              high: sql`excluded.high`,
+              low: sql`excluded.low`,
+              close: sql`excluded.close`,
+              volume: sql`excluded.volume`,
+              value: sql`excluded.value`,
               updatedAt: new Date(),
             },
           });
