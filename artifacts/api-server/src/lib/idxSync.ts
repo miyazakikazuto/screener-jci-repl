@@ -29,6 +29,11 @@ function dateToInt(date: Date): number {
   return parseInt(`${y}${m}${d}`, 10);
 }
 
+function isWeekend(date: Date): boolean {
+  const day = date.getUTCDay();
+  return day === 0 || day === 6;
+}
+
 function intToDate(dateInt: number): Date {
   const s = String(dateInt);
   return new Date(`${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}T00:00:00Z`);
@@ -72,6 +77,7 @@ export async function syncStockOhlc(
 
   for (let i = 0; i < timestamps.length; i++) {
     const d = new Date(timestamps[i]! * 1000);
+    if (isWeekend(d)) continue;
     if (d < startDate || d > endDate) continue;
 
     const close = quote.close?.[i];
@@ -178,9 +184,10 @@ export async function runFullSync(): Promise<void> {
 
         const rows: typeof ohlcTable.$inferInsert[] = [];
         for (let i = 0; i < timestamps.length; i++) {
+          const d = new Date(timestamps[i]! * 1000);
+          if (isWeekend(d)) continue;
           const close = quote.close?.[i];
           if (close == null || isNaN(close)) continue;
-          const d = new Date(timestamps[i]! * 1000);
           const open = quote.open?.[i] ?? close;
           const high = quote.high?.[i] ?? close;
           const low = quote.low?.[i] ?? close;
