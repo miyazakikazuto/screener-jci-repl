@@ -27,14 +27,14 @@ export default function Screener() {
   const [filters, setFilters] = useState({
     search: "",
     sector: "All",
-    defaultFilter: true,
-    excludeNotation: true,
+    defaultFilter: false,
+    excludeNotation: false,
     excludeCorpAction: false,
     excludeUma: false,
-    perMax: 50,
-    roeMin: 0,
-    derMax: 5,
-    momentumMin: 0,
+    perMax: 200,
+    roeMin: -50,
+    derMax: 10,
+    momentumMin: -100,
     momentumWeek: 26,
   });
 
