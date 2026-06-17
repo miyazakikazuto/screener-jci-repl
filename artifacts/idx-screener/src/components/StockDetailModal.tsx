@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { useGetStockDetail } from "@workspace/api-client-react";
+import { useGetStockDetail, getGetStockDetailQueryKey } from "@workspace/api-client-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { format, subMonths } from "date-fns";
 import { formatIDR, formatNum, formatPct, parseIdxDate, parseIdxDateShort } from "@/lib/format";
 import { WatchlistButton } from "./WatchlistButton";
@@ -61,11 +62,23 @@ function ScoreGauge({ title, score }: { title: string, score?: number | null }) 
 export function StockDetailModal({ code, onClose }: { code: string | null; onClose: () => void }) {
   const end = format(new Date(), "yyyyMMdd");
   const start = format(subMonths(new Date(), 6), "yyyyMMdd");
-  
-  const { data, isLoading } = useGetStockDetail(code || "", { start, end }, { 
-    query: { enabled: !!code, retry: false } 
+  const queryClient = useQueryClient();
+  const [cacheBuster, setCacheBuster] = useState(Date.now());
+
+  const { data, isLoading, refetch } = useGetStockDetail(code || "", { start, end }, {
+    query: { enabled: !!code, retry: false, staleTime: 0, refetchOnMount: "always" }
   });
-  
+
+  useEffect(() => {
+    if (code) {
+      const queryKey = getGetStockDetailQueryKey(code, { start, end });
+      queryClient.invalidateQueries({ queryKey });
+      queryClient.removeQueries({ queryKey });
+      setCacheBuster(Date.now());
+      refetch();
+    }
+  }, [code]);
+
   return (
     <Dialog open={!!code} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-5xl h-[85vh] flex flex-col p-0 overflow-hidden bg-card/95 backdrop-blur-3xl border-white/10 shadow-2xl shadow-black/80 sm:rounded-2xl">
