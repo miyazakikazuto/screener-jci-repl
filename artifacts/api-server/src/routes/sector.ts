@@ -97,4 +97,47 @@ router.get("/sector/strength", async (req, res) => {
   }
 });
 
+router.get("/sector/top-stocks", async (req, res) => {
+  try {
+    const sector = req.query.sector as string;
+    if (!sector) return res.status(400).json({ error: "sector param required" });
+
+    const stocks = await db.select().from(screenerTable);
+    const inSector = stocks
+      .filter(s => s.sector === sector)
+      .sort((a, b) => (b.marketCapital ?? 0) - (a.marketCapital ?? 0));
+
+    const round = (v: number | null, d = 2) =>
+      v !== null && v !== undefined ? Math.round(v * Math.pow(10, d)) / Math.pow(10, d) : null;
+
+    const top5 = inSector.slice(0, 5).map(s => ({
+      code: s.code,
+      name: s.name,
+      marketCap: s.marketCapital,
+      week26: round(s.week26PC),
+      week4: round(s.week4PC),
+      per: round(s.per, 1),
+      pbv: round(s.pbv, 2),
+      roe: round(s.roe, 1),
+    }));
+
+    const topGainers = [...inSector]
+      .filter(s => s.week26PC !== null)
+      .sort((a, b) => (b.week26PC ?? 0) - (a.week26PC ?? 0))
+      .slice(0, 3)
+      .map(s => ({ code: s.code, name: s.name, week26: round(s.week26PC) }));
+
+    const topLosers = [...inSector]
+      .filter(s => s.week26PC !== null)
+      .sort((a, b) => (a.week26PC ?? 0) - (b.week26PC ?? 0))
+      .slice(0, 3)
+      .map(s => ({ code: s.code, name: s.name, week26: round(s.week26PC) }));
+
+    res.json({ top5, topGainers, topLosers });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
 export default router;
