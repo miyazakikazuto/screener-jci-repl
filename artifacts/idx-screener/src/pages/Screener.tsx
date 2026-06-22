@@ -32,7 +32,7 @@ export default function Screener() {
     excludeCorpAction: false,
     excludeUma: false,
     perMax: 200,
-    roeMin: -50,
+    roeMin: -100,
     derMax: 10,
     momentumMin: -100,
     momentumWeek: 26,
@@ -253,7 +253,7 @@ export default function Screener() {
                     <div className="flex flex-col items-center justify-center">
                       <Search className="w-8 h-8 mb-3 opacity-20" />
                       <p>No stocks match your strict criteria.</p>
-                      <Button variant="link" className="mt-2 text-primary" onClick={() => setFilters(f => ({...f, search: "", sector: "All", defaultFilter: false, perMax: 200, roeMin: -50}))}>Reset Filters</Button>
+                      <Button variant="link" className="mt-2 text-primary" onClick={() => setFilters(f => ({...f, search: "", sector: "All", defaultFilter: false, perMax: 200, roeMin: -100}))}>Reset Filters</Button>
                     </div>
                   </TableCell>
                 </TableRow>
